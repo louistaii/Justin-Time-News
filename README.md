@@ -1,6 +1,6 @@
 # Justin Time News 📰
 
-An automated daily news podcast generator that fetches Singapore news, creates an AI-powered summary, generates a voiceover, and sends it to Telegram subscribers every day at 8 AM Singapore time.
+An automated daily news podcast generator that fetches Singapore news, creates an AI-powered summary, generates a voiceover, and sends it to Telegram subscribers every day at 8 AM Singapore time!
 
 ## Features
 
