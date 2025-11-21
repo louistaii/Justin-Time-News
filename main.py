@@ -18,6 +18,7 @@ API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # Telegram Configuration
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHANNEL_ID = os.environ.get("TELEGRAM_CHANNEL_ID")
 
 # Debug mode: Set to True to save audio file instead of sending
 DEBUG_MODE = False  # Change to True to save file for testing
@@ -195,39 +196,7 @@ def generate_tts(text_prompt):
 
 
 # ----------------------------------
-#  STEP 4: GET SUBSCRIBERS FROM TELEGRAM
-# ----------------------------------
-def get_subscribers():
-    """
-    Fetches all unique chat IDs from users who have messaged the bot.
-    """
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates"
-    
-    try:
-        response = requests.get(url)
-        if response.status_code != 200:
-            print(f"Failed to get updates: {response.text}")
-            return []
-        
-        data = response.json()
-        chat_ids = set()
-        
-        if data.get("ok") and data.get("result"):
-            for update in data["result"]:
-                if "message" in update and "chat" in update["message"]:
-                    chat_id = update["message"]["chat"]["id"]
-                    chat_ids.add(str(chat_id))
-        
-        print(f"Found {len(chat_ids)} subscribers")
-        return list(chat_ids)
-    
-    except Exception as e:
-        print(f"Error fetching subscribers: {e}")
-        return []
-
-
-# ----------------------------------
-#  STEP 5: FORMAT NEWS AS TEXT MESSAGE
+#  STEP 4: FORMAT NEWS AS TEXT MESSAGE
 # ----------------------------------
 def format_news_text(news_items):
     """
@@ -256,7 +225,7 @@ def format_news_text(news_items):
 
 
 # ----------------------------------
-#  STEP 6: SEND TEXT AND AUDIO VIA TELEGRAM
+#  STEP 5: SEND TEXT AND AUDIO VIA TELEGRAM
 # ----------------------------------
 async def send_to_subscribers(audio_data, news_items, chat_ids):
     """
@@ -329,14 +298,11 @@ if __name__ == "__main__":
                 f.write(audio_data)
             print(f"\n✅ Debug mode: Audio saved to {output_file}")
         else:
-            # Get subscribers and send audio via Telegram
-            print("\nFetching subscribers...")
-            subscribers = get_subscribers()
-            
-            if subscribers:
-                print(f"\nSending news to {len(subscribers)} subscriber(s)...")
-                asyncio.run(send_to_subscribers(audio_data, news_items, subscribers))
+            # Send audio via Telegram Channel
+            if TELEGRAM_CHANNEL_ID:
+                print(f"\nSending news to channel {TELEGRAM_CHANNEL_ID}...")
+                asyncio.run(send_to_subscribers(audio_data, news_items, [TELEGRAM_CHANNEL_ID]))
             else:
-                print("\n⚠️ No subscribers found. Make sure people have messaged your bot first.")
+                print("\n⚠️ TELEGRAM_CHANNEL_ID is not set. Please set it in your environment variables.")
     else:
         print("No recent news found to process.")
